@@ -2,15 +2,7 @@
 
 import sys, copy, os, re
 
-try:
-    from esm_tools import FUNCTION_PATH
-except:
-    print ("Local installation of the esm_tools configuration files missing.")
-    print ("Please try:")
-    print ("    git clone https://gitlab.awi.de/esm_tools/esm_tools.git")
-    print ("    cd esm_tools")
-    print ("    pip install --user -e .")
-    sys.exit(-1)
+from esm_rcfile import FUNCTION_PATH
 
 import esm_parser
 
