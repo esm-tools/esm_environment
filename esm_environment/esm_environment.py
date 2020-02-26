@@ -20,6 +20,9 @@ class environment_infos:
         esm_parser.recursive_run_function(
             [], self.config, "atomic", esm_parser.find_variable, self.config, [], True
         )
+        for entry in ["add_module_actions", "add_export_vars"]:
+            if entry in self.config:
+                del self.config[entry]
 
     def add_esm_var(self):
         if "export_vars" in self.config:
@@ -35,16 +38,19 @@ class environment_infos:
                     self.apply_model_changes(model)
 
 
-    def apply_model_changes(self, model):            
+    def apply_model_changes(self, model, modelconfig = None):
         try:
-            modelconfig = esm_parser.yaml_file_to_dict(FUNCTION_PATH + "/" + model + "/" + model)
+            if not modelconfig:
+                modelconfig = esm_parser.yaml_file_to_dict(FUNCTION_PATH + "/" + model + "/" + model)            
             if "environment_changes" in modelconfig:
                 for entry in ["add_module_actions", "add_export_vars"]:
+                    if not entry in self.config:
+                        self.config[entry] = []
                     if entry in modelconfig["environment_changes"]:
-                        if entry in self.config:
+                        if type(modelconfig["environment_changes"][entry]) == list:
                             self.config[entry] += modelconfig["environment_changes"][entry]
                         else:
-                            self.config[entry] = modelconfig["environment_changes"][entry]
+                            self.config[entry] += [modelconfig["environment_changes"][entry]]
                         del modelconfig["environment_changes"][entry]
                             
                 self.config.update(modelconfig["environment_changes"])
@@ -54,6 +60,8 @@ class environment_infos:
                         newkey=key.replace("computer.", "")
                         self.config[newkey] = self.config[key]
                         del self.config[key]
+
+                esm_parser.pprint_config(self.config)
 
                 esm_parser.basic_choose_blocks(self.config, self.config)
 
