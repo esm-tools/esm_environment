@@ -31,17 +31,24 @@ class environment_infos:
             self.config["export_vars"] = ["ENVIRONMENT_SET_BY_ESMTOOLS=TRUE"]
 
 
-    def apply_config_changes(self, config):
+    def apply_config_changes(self, run_or_compile, config):
         for kind in ["components", "setups"]:
             if kind in config: 
                 for model in config[kind]:
-                    self.apply_model_changes(model)
+                    self.apply_model_changes(model, run_or_compile=run_or_compile)
 
 
-    def apply_model_changes(self, model, modelconfig = None):
+    def apply_model_changes(self, model, run_or_compile = "runtime",  modelconfig = None):
         try:
             if not modelconfig:
-                modelconfig = esm_parser.yaml_file_to_dict(FUNCTION_PATH + "/" + model + "/" + model)            
+                modelconfig = esm_parser.yaml_file_to_dict(FUNCTION_PATH + "/" + model + "/" + model)        
+            thesechanges =  run_or_compile + "_environment_changes"
+            if thesechanges in modelconfig:
+                if "environment_changes" in modelconfig:
+                    modelconfig["environment_changes"].update(modelconfig[thesechanges])
+                else:
+                    modelconfig["environment_changes"] = modelconfig[thesechanges]
+    
             if "environment_changes" in modelconfig:
                 for entry in ["add_module_actions", "add_export_vars"]:
                     if not entry in self.config:
@@ -61,7 +68,7 @@ class environment_infos:
                         self.config[newkey] = self.config[key]
                         del self.config[key]
 
-                esm_parser.pprint_config(self.config)
+                #esm_parser.pprint_config(self.config)
 
                 esm_parser.basic_choose_blocks(self.config, self.config)
 
@@ -70,6 +77,7 @@ class environment_infos:
                         del self.config[entry]
         except:
             pass
+        sys.exit
 
 
 
@@ -84,9 +92,16 @@ class environment_infos:
             script_file.write("\n")
             if "export_vars" in self.config:
                 for var in self.config["export_vars"]:
-                    script_file.write(
-                        "export " + var + "\n"
-                    )
+                    if type(var) == dict:
+                        key = list(var.keys())[0]
+                        value = var[key]
+                        script_file.write(
+                            "export " + key + "='" + str(value)+"'" + "\n"
+                        )
+                    else:
+                        script_file.write(
+                            "export " + str(var) + "\n"
+                        )
             script_file.write("\n")
 
     def add_commands(self, commands, name):
