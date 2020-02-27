@@ -83,9 +83,11 @@ class environment_infos:
     def replace_model_dir(self, model_dir):
         for entry in ["export_vars"]:
             if entry in self.config:
-                for line in self.config["entry"]:
-                    self.config[entry][line] = self.config[entry][line].replace("${model_dir}", model_dir)
-
+                newlist = []
+                for line in self.config[entry]:
+                    newline = line.replace("${model_dir}", model_dir)
+                    newlist.append(newline)
+                self.config[entry] = newlist
 
     def write_dummy_script(self):
         with open("dummy_script.sh", "w") as script_file:
