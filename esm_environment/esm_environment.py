@@ -36,7 +36,7 @@ class environment_infos:
             if kind in config: 
                 for model in config[kind]:
                     self.apply_model_changes(model, run_or_compile=run_or_compile)
-
+                    self.replace_model_dir(config[kind][model]["model_dir"])
 
     def apply_model_changes(self, model, run_or_compile = "runtime",  modelconfig = None):
         try:
@@ -79,6 +79,12 @@ class environment_infos:
             pass
         sys.exit
 
+
+    def replace_model_dir(self, model_dir):
+        for entry in ["export_vars"]:
+            if entry in self.config:
+                for line in self.config["entry"]:
+                    self.config[entry][line] = self.config[entry][line].replace("${model_dir}", model_dir)
 
 
     def write_dummy_script(self):
