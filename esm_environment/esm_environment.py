@@ -128,11 +128,12 @@ class environment_infos:
             script_file.write("\n")
 
     def add_commands(self, commands, name):
-        with open(name + "_script.sh", "w") as newfile:
-            with open("dummy_script.sh", "r") as dummy_file:
-                newfile.write(dummy_file.read())
-            for command in commands:
-                newfile.write(command + "\n")
+        if commands:
+            with open(name + "_script.sh", "w") as newfile:
+                with open("dummy_script.sh", "r") as dummy_file:
+                    newfile.write(dummy_file.read())
+                for command in commands:
+                    newfile.write(command + "\n")
         return name+"_script.sh"
 
     def output():
