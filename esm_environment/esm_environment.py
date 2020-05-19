@@ -15,7 +15,7 @@ import esm_parser
 class environment_infos:
     def __init__(self, run_or_compile, complete_config = None):
 
-        if not complete_config and not config_from_master:  
+        if not complete_config and not config_from_master:
             # should not happen anymore
             self.machine_file = esm_parser.determine_computer_from_hostname()
             self.config = esm_parser.yaml_file_to_dict(self.machine_file)
@@ -23,8 +23,8 @@ class environment_infos:
             esm_parser.recursive_run_function(
                 [], self.config, "atomic", esm_parser.find_variable, self.config, [], True
             )
-        else: 
-            self.config = complete_config["computer"]    
+        else:
+            self.config = complete_config["computer"]
 
         for entry in ["add_module_actions", "add_export_vars"]:
             if entry in self.config:
@@ -50,14 +50,14 @@ class environment_infos:
         try:
             if not modelconfig:
                 # should not happen anymore...
-                modelconfig = esm_parser.yaml_file_to_dict(FUNCTION_PATH + "/" + model + "/" + model)        
+                modelconfig = esm_parser.yaml_file_to_dict(FUNCTION_PATH + "/" + model + "/" + model)
             thesechanges =  run_or_compile + "_environment_changes"
             if thesechanges in modelconfig:
                 if "environment_changes" in modelconfig:
                     modelconfig["environment_changes"].update(modelconfig[thesechanges])
                 else:
                     modelconfig["environment_changes"] = modelconfig[thesechanges]
-   
+
 
             if "environment_changes" in modelconfig:
                 for entry in ["add_module_actions", "add_export_vars"]:
@@ -69,7 +69,7 @@ class environment_infos:
                         else:
                             self.config[entry] += [modelconfig["environment_changes"][entry]]
                         del modelconfig["environment_changes"][entry]
-                            
+
                 self.config.update(modelconfig["environment_changes"])
                 all_keys = self.config.keys()
                 for key in all_keys:
@@ -109,11 +109,11 @@ class environment_infos:
                     key = list(var.keys())[0]
                     value = var[key]
                     environment.append(
-                        "export " + key + "='" + str(value)+"'" 
+                        "export " + key + "='" + str(value)+"'"
                     )
                 else:
                     environment.append(
-                        "export " + str(var) 
+                        "export " + str(var)
                     )
         return environment
 
@@ -126,6 +126,12 @@ class environment_infos:
             for command in self.commands:
                 script_file.write(command + "\n")
             script_file.write("\n")
+
+    def cleanup_dummy_script(self):
+        try:
+            os.remove("dummy_script.sh")
+        except OSError:
+            print("No file dummy_script.sh there; nothing to do...")
 
     def add_commands(self, commands, name):
         if commands:
