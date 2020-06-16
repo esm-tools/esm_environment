@@ -204,7 +204,7 @@ class EnvironmentInfos:
                     newfile.write(command + "\n")
         return name + "_script.sh"
 
-    def output():
+    def output(self):
         esm_parser.pprint_config(self.config)
 
 
