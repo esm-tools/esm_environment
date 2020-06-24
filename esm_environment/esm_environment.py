@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-import sys, copy, os, re
-
-from esm_rcfile import FUNCTION_PATH
+import copy
+import os
+import re
+import sys
 
 import esm_parser
-
+from esm_rcfile import FUNCTION_PATH
 
 ######################################################################################
 ########################### class "environment_infos" ################################
