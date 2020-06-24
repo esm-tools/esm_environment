@@ -3,6 +3,7 @@
 Main module for EsmEnvironment.
 """
 
+import os
 import warnings
 
 import esm_parser
@@ -210,6 +211,8 @@ class EnvironmentInfos:
 class environment_infos(EnvironmentInfos):
     def __init__(self, *args, **kwargs):
         warnings.warn(
-            DeprecationWarning("Please change your code to use EnvironmentInfos!")
+            "Please change your code to use EnvironmentInfos!",
+            DeprecationWarning,
+            stacklevel=2,
         )
         super(environment_infos, self).__init__(*args, **kwargs)
