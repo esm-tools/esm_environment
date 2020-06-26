@@ -101,7 +101,10 @@ class environment_infos:
         environment = []
         if "module_actions" in self.config:
             for action in self.config["module_actions"]:
-                environment.append("module " + action)
+                if action.startswith("source"):
+                    environment.append(action)
+                else:    
+                    environment.append("module " + action)
         environment.append("")
         if "export_vars" in self.config:
             for var in self.config["export_vars"]:
