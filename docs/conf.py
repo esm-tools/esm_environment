@@ -19,7 +19,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+
+sys.path.insert(0, os.path.abspath(".."))
 
 import esm_environment
 
@@ -31,22 +32,22 @@ import esm_environment
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', "sphinx.ext.napoleon"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode", "sphinx.ext.napoleon"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'ESM Environment'
+project = "ESM Environment"
 copyright = "2020, Dirk Barbi"
 author = "Dirk Barbi"
 
@@ -69,10 +70,10 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -98,14 +99,14 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 html_logo = "_static/ESM-TOOLS_LOGO_RGB_72dpi.jpg"
 
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'esm_environmentdoc'
+htmlhelp_basename = "esm_environmentdoc"
 
 
 # -- Options for LaTeX output ------------------------------------------
@@ -114,15 +115,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -132,9 +130,13 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'esm_environment.tex',
-     'ESM Environment Documentation',
-     'Dirk Barbi', 'manual'),
+    (
+        master_doc,
+        "esm_environment.tex",
+        "ESM Environment Documentation",
+        "Dirk Barbi",
+        "manual",
+    ),
 ]
 
 
@@ -143,9 +145,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'esm_environment',
-     'ESM Environment Documentation',
-     [author], 1)
+    (master_doc, "esm_environment", "ESM Environment Documentation", [author], 1)
 ]
 
 
@@ -155,13 +155,13 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'esm_environment',
-     'ESM Environment Documentation',
-     author,
-     'esm_environment',
-     'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "esm_environment",
+        "ESM Environment Documentation",
+        author,
+        "esm_environment",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
-
-
-
