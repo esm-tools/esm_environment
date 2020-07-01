@@ -3,6 +3,7 @@
 Main module for EsmEnvironment.
 """
 
+import copy
 import os
 import warnings
 
@@ -16,6 +17,8 @@ from esm_rcfile import FUNCTION_PATH
 
 class EnvironmentInfos:
     def __init__(self, run_or_compile, complete_config=None, model=None):
+        # Ensure local copy of complete config to avoid mutating it... (facepalm)
+        complete_config = copy.deepcopy(complete_config)
         if complete_config and "computer" in complete_config:
             self.config = complete_config["computer"]
         else:
