@@ -15,10 +15,10 @@ from esm_rcfile import FUNCTION_PATH
 
 
 class EnvironmentInfos:
-    def __init__(self, run_or_compile, complete_config=None):
-
-        if not complete_config:
-            # should not happen anymore
+    def __init__(self, run_or_compile, complete_config=None, model=None):
+        if complete_config and "computer" in complete_config:
+            self.config = complete_config["computer"]
+        else:
             self.machine_file = esm_parser.determine_computer_from_hostname()
             self.config = esm_parser.yaml_file_to_dict(self.machine_file)
             esm_parser.basic_choose_blocks(self.config, self.config)
@@ -31,15 +31,14 @@ class EnvironmentInfos:
                 [],
                 True,
             )
-        else:
-            self.config = complete_config["computer"]
 
         # PG: Why?
         for entry in ["add_module_actions", "add_export_vars"]:
             if entry in self.config:
                 del self.config[entry]
 
-        self.apply_config_changes(run_or_compile, complete_config)
+        print("Applying config changes based on: ", model)
+        self.apply_config_changes(run_or_compile, complete_config, model)
         self.add_esm_var()
         self.commands = self.get_shell_commands()
 
@@ -51,16 +50,15 @@ class EnvironmentInfos:
         else:
             self.config["export_vars"] = ["ENVIRONMENT_SET_BY_ESMTOOLS=TRUE"]
 
-    def apply_config_changes(self, run_or_compile, config):
-        for model in config:
-            self.apply_model_changes(
-                model, run_or_compile=run_or_compile, modelconfig=config[model]
+    def apply_config_changes(self, run_or_compile, config, model):
+        self.apply_model_changes(
+            model, run_or_compile=run_or_compile, modelconfig=config[model]
             )
 
     def apply_model_changes(self, model, run_or_compile="runtime", modelconfig=None):
         try:
             if not modelconfig:
-                # should not happen anymore...
+                print(" should not happen anymore...")
                 modelconfig = esm_parser.yaml_file_to_dict(
                     FUNCTION_PATH + "/" + model + "/" + model
                 )
@@ -101,6 +99,9 @@ class EnvironmentInfos:
                         del self.config[entry]
         except:
             pass
+
+
+
 
     def replace_model_dir(self, model_dir):
         """
