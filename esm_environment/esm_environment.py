@@ -40,7 +40,6 @@ class EnvironmentInfos:
             if entry in self.config:
                 del self.config[entry]
 
-        print("Applying config changes based on: ", model)
         self.apply_config_changes(run_or_compile, complete_config, model)
         self.add_esm_var()
         self.commands = self.get_shell_commands()
@@ -61,7 +60,7 @@ class EnvironmentInfos:
     def apply_model_changes(self, model, run_or_compile="runtime", modelconfig=None):
         try:
             if not modelconfig:
-                print(" should not happen anymore...")
+                print("Should not happen anymore...")
                 modelconfig = esm_parser.yaml_file_to_dict(
                     FUNCTION_PATH + "/" + model + "/" + model
                 )
