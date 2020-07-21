@@ -40,7 +40,12 @@ class EnvironmentInfos:
             if entry in self.config:
                 del self.config[entry]
 
-        self.apply_config_changes(run_or_compile, complete_config, model)
+        if model:
+            self.apply_config_changes(run_or_compile, complete_config, model)
+        else:
+            for model in complete_config:
+                self.apply_config_changes(run_or_compile, complete_config, model)
+
         self.add_esm_var()
         self.commands = self.get_shell_commands()
 
