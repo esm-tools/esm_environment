@@ -140,7 +140,12 @@ class EnvironmentInfos:
         environment = []
         if "module_actions" in self.config:
             for action in self.config["module_actions"]:
-                environment.append("module " + action)
+				    # seb-wahl: workaround to allow source ... to be added to the batch header
+					 # until a proper solution is available. Required with FOCI
+                if action.startswith("source"):
+                    environment.append(action)
+                else:
+                    environment.append("module " + action)
         # Add an empty string as a newline:
         environment.append("")
         if "export_vars" in self.config:
