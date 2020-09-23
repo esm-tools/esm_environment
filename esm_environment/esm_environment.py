@@ -71,6 +71,20 @@ class EnvironmentInfos:
                 )
             thesechanges = run_or_compile + "_environment_changes"
             if thesechanges in modelconfig:
+
+# kh 16.09.20 the machine name is already handled here
+# additionally handle different versions of the model (i.e. choose_version...) for each machine
+# if this is possible here in a more generic way, it can be refactored
+                if "choose_version" in modelconfig[thesechanges]:
+                    if "version" in modelconfig:
+                        if modelconfig["version"] in modelconfig[thesechanges]["choose_version"]:
+                            for k, v in modelconfig[thesechanges]["choose_version"][modelconfig["version"]].items():
+
+# kh 16.09.20 move up one level and replace default
+                                modelconfig[thesechanges][k] = v
+
+                    del modelconfig[thesechanges]["choose_version"]
+
                 if "environment_changes" in modelconfig:
                     modelconfig["environment_changes"].update(modelconfig[thesechanges])
                 else:
