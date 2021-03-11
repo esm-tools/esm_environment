@@ -19,6 +19,7 @@ class EnvironmentInfos:
     def __init__(self, run_or_compile, complete_config=None, model=None):
         # Ensure local copy of complete config to avoid mutating it... (facepalm)
         complete_config = copy.deepcopy(complete_config)
+        # Load computer dictionary or initialize it from the correct machine file
         if complete_config and "computer" in complete_config:
             self.config = complete_config["computer"]
         else:
@@ -35,16 +36,47 @@ class EnvironmentInfos:
                 True,
             )
 
-        # PG: Why?
+        # Add_s can only be inside choose_ blocks in the machine file
         for entry in ["add_module_actions", "add_export_vars"]:
             if entry in self.config:
                 del self.config[entry]
 
-        if model:
-            self.apply_config_changes(run_or_compile, complete_config, model)
-        else:
-            for model in complete_config:
+        if "general" in complete_config:
+            ## Complete information in the general section with ``further_reading``
+            #general = copy.deepcopy(complete_config.get("general"), {})
+            #esm_parser.attach_to_config_and_remove(general, "further_reading")
+            ## Merge the completed information with priority on the already existing
+            ## variables in ``complete_config``
+            #complete_config["general"] = esm_parser.priority_merge_dicts(
+            #    complete_config["general"], general, priority = "first"
+            #)
+            #if "further_reading" in complete_config["general"]:
+            #    del complete_config["general"]["further_reading"]
+            #del general
+
+            # Is it a coupled setup?
+            coupled_setup = complete_config["general"].get("coupled_setup", False)
+
+            # Check if a general setup environment exists that will overwrite the
+            # component setups
+            if coupled_setup and (
+                run_or_compile + "_environment_changes" in complete_config["general"] or
+                "environment_changes" in complete_config["general"]
+            ):
+                general_env = True
+                self.apply_config_changes(run_or_compile, complete_config, "general")
+            else:
+                general_env = False
+
+        # If the model is defined during the instantiation of the class (e.g.
+        # during esm_master with a coupled setup), get the environment for that
+        # model. Otherwise, loop through all the keys of the complete_config dictionary
+        if not general_env:
+            if model:
                 self.apply_config_changes(run_or_compile, complete_config, model)
+            else:
+                for model in complete_config:
+                    self.apply_config_changes(run_or_compile, complete_config, model)
 
         self.add_esm_var()
         self.commands = self.get_shell_commands()
@@ -53,9 +85,9 @@ class EnvironmentInfos:
         """Adds the ENVIRONMENT_SET_BY_ESMTOOLS=TRUE to the config, for later
         dumping to the shell script."""
         if "export_vars" in self.config:
-            self.config["export_vars"] += ["ENVIRONMENT_SET_BY_ESMTOOLS=TRUE"]
+            self.config["export_vars"]["ENVIRONMENT_SET_BY_ESMTOOLS"] = "TRUE"
         else:
-            self.config["export_vars"] = ["ENVIRONMENT_SET_BY_ESMTOOLS=TRUE"]
+            self.config["export_vars"] = {"ENVIRONMENT_SET_BY_ESMTOOLS": "TRUE"}
 
     def apply_config_changes(self, run_or_compile, config, model):
         self.apply_model_changes(
@@ -63,63 +95,103 @@ class EnvironmentInfos:
             )
 
     def apply_model_changes(self, model, run_or_compile="runtime", modelconfig=None):
-        try:
-            if not modelconfig:
-                print("Should not happen anymore...")
-                modelconfig = esm_parser.yaml_file_to_dict(
-                    FUNCTION_PATH + "/" + model + "/" + model
-                )
-            thesechanges = run_or_compile + "_environment_changes"
-            if thesechanges in modelconfig:
+        if not modelconfig:
+            print("Should not happen anymore...")
+            modelconfig = esm_parser.yaml_file_to_dict(
+                FUNCTION_PATH + "/" + model + "/" + model
+            )
+        thesechanges = run_or_compile + "_environment_changes"
+        if thesechanges in modelconfig:
 
 # kh 16.09.20 the machine name is already handled here
 # additionally handle different versions of the model (i.e. choose_version...) for each machine
 # if this is possible here in a more generic way, it can be refactored
-                if "choose_version" in modelconfig[thesechanges]:
-                    if "version" in modelconfig:
-                        if modelconfig["version"] in modelconfig[thesechanges]["choose_version"]:
-                            for k, v in modelconfig[thesechanges]["choose_version"][modelconfig["version"]].items():
+            if "choose_version" in modelconfig[thesechanges]:
+                if "version" in modelconfig:
+                    if modelconfig["version"] in modelconfig[thesechanges]["choose_version"]:
+                        for k, v in modelconfig[thesechanges]["choose_version"][modelconfig["version"]].items():
 
 # kh 16.09.20 move up one level and replace default
-                                modelconfig[thesechanges][k] = v
+                            modelconfig[thesechanges][k] = v
 
-                    del modelconfig[thesechanges]["choose_version"]
-
-                if "environment_changes" in modelconfig:
-                    modelconfig["environment_changes"].update(modelconfig[thesechanges])
-                else:
-                    modelconfig["environment_changes"] = modelconfig[thesechanges]
+                del modelconfig[thesechanges]["choose_version"]
 
             if "environment_changes" in modelconfig:
-                for entry in ["add_module_actions", "add_export_vars"]:
-                    if not entry in self.config:
+                modelconfig["environment_changes"].update(modelconfig[thesechanges])
+            else:
+                modelconfig["environment_changes"] = modelconfig[thesechanges]
+
+        if "environment_changes" in modelconfig:
+            for entry in ["add_module_actions", "add_export_vars"]:
+                if not entry in self.config:
+                    if entry is "add_module_actions":
                         self.config[entry] = []
-                    if entry in modelconfig["environment_changes"]:
-                        if isinstance(modelconfig["environment_changes"][entry], list):
-                            self.config[entry] += modelconfig["environment_changes"][
-                                entry
-                            ]
+                    elif entry is "add_export_vars":
+                        self.config[entry] = {}
+                if entry in modelconfig["environment_changes"]:
+                    if isinstance(modelconfig["environment_changes"][entry], list):
+                        self.config[entry] += modelconfig["environment_changes"][
+                            entry
+                        ]
+                    else:
+                        self.config[entry].update(
+                            modelconfig["environment_changes"][entry]
+                        )
+                    del modelconfig["environment_changes"][entry]
+                if entry is "add_export_vars":
+                    # Find the entry paths
+                    path_sep = ","
+                    entry_paths = esm_parser.find_key(
+                        modelconfig["environment_changes"],
+                        entry,
+                        paths2finds = [],
+                        sep = path_sep,
+                    )
+                    for entry_path in entry_paths:
+                        path_to_var = entry_path.split(path_sep)
+                        if len(path_to_var) > 1:
+                            export_dict = esm_parser.find_value_for_nested_key(
+                                modelconfig["environment_changes"],
+                                path_to_var[-2],
+                                path_to_var[:-2],
+                            )
                         else:
-                            self.config[entry] += [
-                                modelconfig["environment_changes"][entry]
-                            ]
-                        del modelconfig["environment_changes"][entry]
+                            export_dict = modelconfig["environment_changes"]
+                        export_vars = export_dict[path_to_var[-1]]
 
-                self.config.update(modelconfig["environment_changes"])
-                all_keys = self.config.keys()
-                for key in all_keys:
-                    if "choose_computer." in key:
-                        newkey = key.replace("computer.", "")
-                        self.config[newkey] = self.config[key]
-                        del self.config[key]
+                        # Transforms lists in of export_vars in dictionaries. This
+                        # allows to add lists of export_vars to the machine-defined
+                        # export_vars that should always be a dictionary. Note that
+                        # lists are always added at the end of the export_vars, if you
+                        # want to edit variables of an already existing ditionary
+                        # make your export_var be a dictionary.
+                        if isinstance(export_vars, list):
+                            new_export_vars = {}
+                            for var in export_vars:
+                                rep = 0
+                                while True:
+                                    if var + f"[[{rep}]][[list]]" in new_export_vars:
+                                        rep += 1
+                                    else:
+                                        new_export_vars[
+                                            var + f"[[{rep}]][[list]]"
+                                        ] = var
+                                        break
+                            export_dict[entry] = new_export_vars
 
-                esm_parser.basic_choose_blocks(self.config, self.config)
+            self.config.update(modelconfig["environment_changes"])
+            all_keys = self.config.keys()
+            for key in all_keys:
+                if "choose_computer." in key:
+                    newkey = key.replace("computer.", "")
+                    self.config[newkey] = self.config[key]
+                    del self.config[key]
 
-                for entry in ["add_module_actions", "add_export_vars"]:
-                    if entry in self.config:
-                        del self.config[entry]
-        except:
-            pass
+            esm_parser.basic_choose_blocks(self.config, self.config)
+
+            for entry in ["add_module_actions", "add_export_vars"]:
+                if entry in self.config:
+                    del self.config[entry]
 
 
 
@@ -168,6 +240,16 @@ class EnvironmentInfos:
                     key = list(var.keys())[0]
                     value = var[key]
                     environment.append("export " + key + "='" + str(value) + "'")
+                # If the variable is not a dictionary itself but export_vars is
+                elif isinstance(self.config["export_vars"], dict):
+                    key = var
+                    value = self.config["export_vars"][key]
+                    # If the variable was added as a list produce the correct string
+                    if key.endswith("[[list]]"):
+                        key = key.replace("[[list]]", "")
+                        environment.append("export " + value)
+                    else:
+                        environment.append("export " + key + "=" + str(value))
                 else:
                     environment.append("export " + str(var))
         return environment
