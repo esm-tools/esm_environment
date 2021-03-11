@@ -60,23 +60,30 @@ class EnvironmentInfos:
             # Check if a general setup environment exists that will overwrite the
             # component setups
             if coupled_setup and (
-                run_or_compile + "_environment_changes" in complete_config["general"] or
+                "compiletime_environment_changes" in complete_config["general"] or
+                "runtime_environment_changes" in complete_config["general"] or
                 "environment_changes" in complete_config["general"]
-            ):
+            ):  # TODO: do this if the model include other models and the environment is
+                # labelled as priority over the other models environment (OIFS case)
                 general_env = True
                 self.apply_config_changes(run_or_compile, complete_config, "general")
             else:
                 general_env = False
 
+        # If there is a general environment remove all the model specific environments
+        # define in the model files and preserve only the model specific environments
+        # that are explicitly defined in the setup file
+        if general_env:
+            self.load_component_env_changes_only_in_setup(complete_config)
+
         # If the model is defined during the instantiation of the class (e.g.
         # during esm_master with a coupled setup), get the environment for that
         # model. Otherwise, loop through all the keys of the complete_config dictionary
-        if not general_env:
-            if model:
+        if model:
+            self.apply_config_changes(run_or_compile, complete_config, model)
+        else:
+            for model in complete_config:
                 self.apply_config_changes(run_or_compile, complete_config, model)
-            else:
-                for model in complete_config:
-                    self.apply_config_changes(run_or_compile, complete_config, model)
 
         self.add_esm_var()
         self.commands = self.get_shell_commands()
@@ -128,16 +135,16 @@ class EnvironmentInfos:
                         self.config[entry] = []
                     elif entry is "add_export_vars":
                         self.config[entry] = {}
-                if entry in modelconfig["environment_changes"]:
-                    if isinstance(modelconfig["environment_changes"][entry], list):
-                        self.config[entry] += modelconfig["environment_changes"][
-                            entry
-                        ]
-                    else:
-                        self.config[entry].update(
-                            modelconfig["environment_changes"][entry]
-                        )
-                    del modelconfig["environment_changes"][entry]
+#                if entry in modelconfig["environment_changes"]:
+#                    if isinstance(modelconfig["environment_changes"][entry], list):
+#                        self.config[entry] += modelconfig["environment_changes"][
+#                            entry
+#                        ]
+#                    else:
+#                        self.config[entry].update(
+#                            modelconfig["environment_changes"][entry]
+#                        )
+#                    del modelconfig["environment_changes"][entry]
                 if entry is "add_export_vars":
                     # Find the entry paths
                     path_sep = ","
@@ -177,7 +184,7 @@ class EnvironmentInfos:
                                             var + f"[[{rep}]][[list]]"
                                         ] = var
                                         break
-                            export_dict[entry] = new_export_vars
+                            export_dict[path_to_var[-1]] = new_export_vars
 
             self.config.update(modelconfig["environment_changes"])
             all_keys = self.config.keys()
@@ -194,6 +201,63 @@ class EnvironmentInfos:
                     del self.config[entry]
 
 
+    def load_component_env_changes_only_in_setup(self, complete_config):
+        setup = complete_config.get("general", {}).get("model", None)
+        version = complete_config.get("general", {}).get("version", None)
+        models = complete_config.get("general", {}).get("models", None)
+        if not models:
+            print(
+                "Use the EnvironmentInfos.load_component_env_changes_only_in_setup " +
+                "method only if complete_config has a general chapter that includes " +
+                "a models list"
+            )
+            sys.exit(1)
+
+        include_path, needs_load = esm_parser.look_for_file(
+            setup,
+            setup + "-" + version,
+        )
+        if not include_path:
+            print(f"File for {setup + '-' + version} not found")
+            sys.exit(1)
+        if needs_load:
+            setup_config = esm_parser.yaml_file_to_dict(include_path)
+        else:
+            print(f"A setup needs to load a file so this line shouldn't be reached")
+            sys.exit(1)
+
+        for attachment in esm_parser.CONFIGS_TO_ALWAYS_ATTACH_AND_REMOVE:
+            esm_parser.attach_to_config_and_remove(setup_config, attachment)
+            for component in list(setup_config):
+                esm_parser.attach_to_config_and_remove(
+                    setup_config[component],
+                    attachment,
+                )
+
+        environment_vars = [
+            "environment_changes",
+            "compiletime_environment_changes",
+            "runtime_environment_changes",
+        ]
+        for model in models:
+            if model not in complete_config:
+                print(f"The chapter {model} does not exist in complete_config")
+                sys.exit(1)
+            model_config = complete_config[model]
+            for env_var in environment_vars:
+                if env_var in model_config:
+                    del model_config[env_var]
+                if env_var in setup_config.get(model, {}):
+                    esm_parser.recursive_run_function(
+                        [],
+                        setup_config[model][env_var],
+                        "atomic",
+                        esm_parser.find_variable,
+                        complete_config,
+                        {},
+                        {},
+                    )
+                    model_config[env_var] = setup_config[model][env_var]
 
 
     def replace_model_dir(self, model_dir):
