@@ -6,6 +6,7 @@ Main module for EsmEnvironment.
 import copy
 import os
 import warnings
+import re
 
 import esm_parser
 from esm_rcfile import FUNCTION_PATH
@@ -191,13 +192,13 @@ class EnvironmentInfos:
         in this function from being a list to be the following dictionary:
 
         .. code-block::yaml
-           'SOMETHING=dummy[[0]][[list]]': 'SOMETHING=dummy'
-           'somethingelse=dummy[[0]][[list]]': 'somethingelse=dummy'
-           'SOMETHING=dummy[[1]][[list]]': "SOMETHING=dummy'
+           'SOMETHING=dummy[(0)][(list)]': 'SOMETHING=dummy'
+           'somethingelse=dummy[(0)][(list)]': 'somethingelse=dummy'
+           'SOMETHING=dummy[(1)][(list)]': "SOMETHING=dummy'
 
         Note that, once all the environments are resolved, and before writing the
         exports in the bash files, the ``export_vars`` dictionary is transformed again
-        into a list and the indexes and ``[[list]]`` strings are removed.
+        into a list and the indexes and ``[(list)]`` strings are removed.
 
         Parameters
         ----------
@@ -225,12 +226,12 @@ class EnvironmentInfos:
             while True:
                 # If the key with the current index already exists move the move the
                 # index forward
-                if var + f"[[{index}]][[list]]" in new_export_vars:
+                if var + f"[({index})][(list)]" in new_export_vars:
                     index += 1
                 # If the key with the current index does not exist yet, add the element
                 # to the dictionary
                 else:
-                    new_export_vars[var + f"[[{index}]][[list]]"] = var
+                    new_export_vars[var + f"[({index})][(list)]"] = var
                     break
 
         # Redefined the transformed dictionary
@@ -330,6 +331,9 @@ class EnvironmentInfos:
                 # 2. Redefine the variable
                 if env_var in setup_config.get(model, {}):
                     # Solve any unresolved variables in the reloaded setup environment
+                    # TODO: change this to  be out of the loop using the method
+                    # ``model_config.finalize()``, currently not working twice due to
+                    # a problem with the dates
                     esm_parser.recursive_run_function(
                         [],
                         setup_config[model][env_var],
@@ -391,10 +395,18 @@ class EnvironmentInfos:
                 elif isinstance(self.config["export_vars"], dict):
                     key = var
                     value = self.config["export_vars"][key]
+                    ipattern = "\[+\(\d+\)+\]$"
                     # If the variable was added as a list produce the correct string
-                    if key.endswith("[[list]]"):
-                        key = key.replace("[[list]]", "")
+                    if key.endswith("[(list)]"):
+                        key = key.replace("[(list)]", "")
                         environment.append("export " + value)
+                    elif re.search(ipattern, key):
+                        environment.append(
+                            "export " +
+                            re.sub(ipattern, "", key) +
+                            "="
+                            + str(value)
+                        )
                     else:
                         environment.append("export " + key + "=" + str(value))
                 else:
