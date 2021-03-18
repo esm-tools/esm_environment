@@ -125,7 +125,7 @@ class EnvironmentInfos:
                     self.turn_add_export_vars_to_dict(modelconfig, entry)
 
             self.config.update(modelconfig["environment_changes"])
-            all_keys = self.config.keys()
+            all_keys = list(self.config.keys())
             for key in all_keys:
                 if "choose_computer." in key:
                     newkey = key.replace("computer.", "")
