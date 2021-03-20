@@ -386,29 +386,32 @@ class EnvironmentInfos:
         # Add an empty string as a newline:
         environment.append("")
         if "export_vars" in self.config:
-            for var, val in self.config["export_vars"].items():
-                if isinstance(val, dict):
-                    key = list(val.keys())[0]
-                    value = val[key]
-                    environment.append("export " + key + "='" + str(value) + "'")
-                # If the variable is not a dictionary itself but export_vars is
-                elif isinstance(self.config["export_vars"], dict):
-                    key = var
-                    value = self.config["export_vars"][key]
-                    ipattern = "\[+\(\d+\)+\]$"
-                    # If the variable was added as a list produce the correct string
-                    if key.endswith("[(list)]"):
-                        key = key.replace("[(list)]", "")
-                        environment.append("export " + value)
-                    elif re.search(ipattern, key):
-                        environment.append(
-                            "export " +
-                            re.sub(ipattern, "", key) +
-                            "="
-                            + str(value)
-                        )
+            for var in self.config["export_vars"]:
+                # If export_vars is a dictionary
+                if isinstance(self.config["export_vars"], dict):
+                    # If the variable is a dictionary itself (e.g. "AWI_FESOM_YAML"
+                    # in fesom-1.4)
+                    if isinstance(self.config["export_vars"][var], dict):
+                        key = var
+                        value = self.config["export_vars"][key]
+                        environment.append("export " + key + "='" + str(value) + "'")
                     else:
-                        environment.append("export " + key + "=" + str(value))
+                        key = var
+                        value = self.config["export_vars"][key]
+                        ipattern = "\[+\(\d+\)+\]$"
+                        # If the variable was added as a list produce the correct string
+                        if key.endswith("[(list)]"):
+                            key = key.replace("[(list)]", "")
+                            environment.append("export " + value)
+                        elif re.search(ipattern, key):
+                            environment.append(
+                                "export " +
+                                re.sub(ipattern, "", key) +
+                                "="
+                                + str(value)
+                            )
+                        else:
+                            environment.append("export " + key + "=" + str(value))
                 else:
                     environment.append("export " + str(var))
         return environment
