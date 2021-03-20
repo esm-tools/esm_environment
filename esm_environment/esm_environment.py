@@ -386,10 +386,10 @@ class EnvironmentInfos:
         # Add an empty string as a newline:
         environment.append("")
         if "export_vars" in self.config:
-            for var in self.config["export_vars"]:
-                if isinstance(var, dict):
-                    key = list(var.keys())[0]
-                    value = var[key]
+            for var, val in self.config["export_vars"].items():
+                if isinstance(val, dict):
+                    key = list(val.keys())[0]
+                    value = val[key]
                     environment.append("export " + key + "='" + str(value) + "'")
                 # If the variable is not a dictionary itself but export_vars is
                 elif isinstance(self.config["export_vars"], dict):
