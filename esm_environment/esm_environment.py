@@ -29,7 +29,7 @@ class EnvironmentInfos:
     ``module_actions`` and ``export_vars``.
 
     Environment variables
-    =====================
+    ---------------------
 
     module_actions : list
         A list of ``module`` actions to be included in the compilation and run scripts
@@ -81,7 +81,7 @@ class EnvironmentInfos:
         Note that the index is removed once the exports are transferred into the script.
 
     Modification of the environment through the model/setup files
-    =============================================================
+    -------------------------------------------------------------
 
     As previously mentioned, the default environment for a HPC system is defined inside
     its machine file (in ``esm_tools/machines/<machine_name>.yaml``). However, it is
@@ -125,7 +125,7 @@ class EnvironmentInfos:
        environments for a whole setup.
 
     Coupled setup environment control
-    =================================
+    ---------------------------------
 
     There are two ways in which the environments for the coupled setups can be
     modified: defining ``environment_changes`` for each component or defining a general
