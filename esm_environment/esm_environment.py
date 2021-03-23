@@ -101,7 +101,7 @@ class EnvironmentInfos:
         only applied during run time.
 
     The syntax for this dictionary is the same as that defined in
-    :ref:`Environment variables`, but using ``add_`` in front of the environment
+    `Environment variables`, but using ``add_`` in front of the environment
     variables (``add_module_actions`` and ``add_export_vars``). Furthermore, the
     environment variables can be nested inside ``choose_`` blocks:
 
@@ -121,7 +121,7 @@ class EnvironmentInfos:
        only occur for the compilation script of the model containing those changes**.
        For runtime all the environments of the components will be added together into
        the same ``.sad`` script. Please, refer to
-       :ref:`Coupled setup environment control` for an explanation on how to control
+       `Coupled setup environment control` for an explanation on how to control
        environments for a whole setup.
 
     Coupled setup environment control
