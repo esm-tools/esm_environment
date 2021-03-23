@@ -394,7 +394,7 @@ class EnvironmentInfos:
                     if isinstance(self.config["export_vars"][var], dict):
                         key = var
                         value = self.config["export_vars"][key]
-                        environment.append("export {key} ='\"{str(value)}\"'")
+                        environment.append("export {key}='\"{str(value)}\"'")
                     else:
                         key = var
                         value = self.config["export_vars"][key]
@@ -405,10 +405,10 @@ class EnvironmentInfos:
                             environment.append(f"export {value}")
                         elif re.search(ipattern, key):
                             environment.append(
-                                f"export {re.sub(ipattern, '', key)} = {str(value)}"
+                                f"export {re.sub(ipattern, '', key)}={str(value)}"
                             )
                         else:
-                            environment.append(f"export {key} = {str(value)}")
+                            environment.append(f"export {key}={str(value)}")
                 else:
                     environment.append("export {str(var)}")
         return environment
