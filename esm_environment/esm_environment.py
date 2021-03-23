@@ -394,7 +394,7 @@ class EnvironmentInfos:
                     if isinstance(self.config["export_vars"][var], dict):
                         key = var
                         value = self.config["export_vars"][key]
-                        environment.append("export {key}='\"{str(value)}\"'")
+                        environment.append(f"export {key}='{str(value)}'")
                     else:
                         key = var
                         value = self.config["export_vars"][key]
