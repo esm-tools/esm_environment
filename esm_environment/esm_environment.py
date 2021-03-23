@@ -231,7 +231,7 @@ class EnvironmentInfos:
                 # If the key with the current index does not exist yet, add the element
                 # to the dictionary
                 else:
-                    new_export_vars[var + f"[({index})][(list)]"] = var
+                    new_export_vars[f"{var}[({index})][(list)]"] = var
                     break
 
         # Redefined the transformed dictionary
@@ -284,7 +284,7 @@ class EnvironmentInfos:
         )
         # If setup file not found throw and error TODO: logging
         if not include_path:
-            print(f"File for {setup + '-' + version} not found")
+            print(f"File for {setup}-{version} not found")
             sys.exit(1)
         # Load the file TODO: logging
         if needs_load:
@@ -382,7 +382,7 @@ class EnvironmentInfos:
                 if action.startswith("source"):
                     environment.append(action)
                 else:
-                    environment.append("module " + action)
+                    environment.append(f"module {action}")
         # Add an empty string as a newline:
         environment.append("")
         if "export_vars" in self.config:
@@ -394,7 +394,7 @@ class EnvironmentInfos:
                     if isinstance(self.config["export_vars"][var], dict):
                         key = var
                         value = self.config["export_vars"][key]
-                        environment.append("export " + key + "='" + str(value) + "'")
+                        environment.append("export {key} ='\"{str(value)}\"'")
                     else:
                         key = var
                         value = self.config["export_vars"][key]
@@ -402,18 +402,15 @@ class EnvironmentInfos:
                         # If the variable was added as a list produce the correct string
                         if key.endswith("[(list)]"):
                             key = key.replace("[(list)]", "")
-                            environment.append("export " + value)
+                            environment.append(f"export {value}")
                         elif re.search(ipattern, key):
                             environment.append(
-                                "export " +
-                                re.sub(ipattern, "", key) +
-                                "="
-                                + str(value)
+                                f"export {re.sub(ipattern, '', key)} = {str(value)}"
                             )
                         else:
-                            environment.append("export " + key + "=" + str(value))
+                            environment.append(f"export {key} = {str(value)}")
                 else:
-                    environment.append("export " + str(var))
+                    environment.append("export {str(var)}")
         return environment
 
     def write_dummy_script(self, include_set_e=True):
@@ -436,7 +433,7 @@ class EnvironmentInfos:
             if include_set_e:
                 script_file.write("set -e\n")
             for command in self.commands:
-                script_file.write(command + "\n")
+                script_file.write(f"{command}\n")
             script_file.write("\n")
 
     @staticmethod
@@ -468,12 +465,12 @@ class EnvironmentInfos:
             ``name`` + "_script.sh"
         """
         if commands:
-            with open(name + "_script.sh", "w") as newfile:
+            with open(f"{name}_script.sh", "w") as newfile:
                 with open("dummy_script.sh", "r") as dummy_file:
                     newfile.write(dummy_file.read())
                 for command in commands:
-                    newfile.write(command + "\n")
-        return name + "_script.sh"
+                    newfile.write(f"{command}\n")
+        return f"{name}_script.sh"
 
     def output(self):
         esm_parser.pprint_config(self.config)
