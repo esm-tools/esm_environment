@@ -27,30 +27,29 @@ class EnvironmentInfos:
     ``configs/machines/`` folder (e.g. ``ollie.yaml``). This file should contain all
     the required preset variables for that system and the environment variables
     ``module_actions`` and ``export_vars``.
+
+    By instancing the ``EnvironmentInfos`` class, the environment information for
+    the specified model or coupled setup is compiled and stored in
+    ``self.commands``. If there are environment variables inside the ``general``
+    section, ``__init__`` will ignore the environment variables from the standalone
+    component files, and it will define the ``general.environment_changes`` for
+    each component of the setup.
+
+    Parameters
+    ----------
+    run_or_compile : str
+        A string indicating whether ``EnvironmentInfos`` was instanced from a
+        compilation operation (``compiletime``) or a run (``runtime``).
+    complete_config : dict
+        Dictionary containing all the compiled information from the `yaml` files
+        needed for the current `ESM-Tools` operation.
+    model : string
+        Model for which the environment is required. If not defined, this method
+        will loop through all the available keys in ``complete_config``.
     """
 
 
     def __init__(self, run_or_compile, complete_config=None, model=None):
-        """
-        By instancing the ``EnvironmentInfos`` class, the environment information for
-        the specified model or coupled setup is compiled and stored in
-        ``self.commands``. If there are environment variables inside the ``general``
-        section, ``__init__`` will ignore the environment variables from the standalone
-        component files, and it will define the ``general.environment_changes`` for
-        each component of the setup.
-
-        Parameters
-        ----------
-        run_or_compile : str
-            A string indicating whether ``EnvironmentInfos`` was instanced from a
-            compilation operation (``compiletime``) or a run (``runtime``).
-        complete_config : dict
-            Dictionary containing all the compiled information from the `yaml` files
-            needed for the current `ESM-Tools` operation.
-        model : string
-            Model for which the environment is required. If not defined, this method
-            will loop through all the available keys in ``complete_config``.
-        """
         # Ensure local copy of complete config to avoid mutating it... (facepalm)
         complete_config = copy.deepcopy(complete_config)
         # Load computer dictionary or initialize it from the correct machine file
