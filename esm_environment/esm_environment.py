@@ -227,6 +227,7 @@ class EnvironmentInfos:
             # current entry. Later, if the content of export_dict is a list it will be
             # turned into a dictionary itself
             path_to_var = entry_path.split(path_sep)
+            path_to_var = [esm_parser.convert(leaf) for leaf in path_to_var]
             if len(path_to_var) > 1:
                 export_dict = esm_parser.find_value_for_nested_key(
                     modelconfig["environment_changes"],
