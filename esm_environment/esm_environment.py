@@ -166,12 +166,12 @@ class EnvironmentInfos:
             for entry in ["add_module_actions", "add_export_vars"]:
                 # Initialize the environment variables
                 if not entry in self.config:
-                    if entry is "add_module_actions":
+                    if entry == "add_module_actions":
                         self.config[entry] = []
-                    elif entry is "add_export_vars":
+                    elif entry == "add_export_vars":
                         self.config[entry] = {}
 
-                if entry is "add_export_vars":
+                if entry == "add_export_vars":
                     # Transform any list whose name contains add_export_vars into a
                     # dictionary (machine-file export_vars are from now on always a
                     # dictionary but add_export_vars of components and setups are
@@ -227,6 +227,7 @@ class EnvironmentInfos:
             # current entry. Later, if the content of export_dict is a list it will be
             # turned into a dictionary itself
             path_to_var = entry_path.split(path_sep)
+            path_to_var = [esm_parser.convert(leaf) for leaf in path_to_var]
             if len(path_to_var) > 1:
                 export_dict = esm_parser.find_value_for_nested_key(
                     modelconfig["environment_changes"],
