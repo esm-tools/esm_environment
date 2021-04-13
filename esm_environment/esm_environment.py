@@ -7,6 +7,7 @@ import copy
 import os
 import warnings
 import re
+import sys
 
 import esm_parser
 from esm_rcfile import FUNCTION_PATH
