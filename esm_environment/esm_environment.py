@@ -485,6 +485,7 @@ class EnvironmentInfos:
         """
 
         environment = []
+        # Write module actions
         if "module_actions" in self.config:
             for action in self.config["module_actions"]:
                 # seb-wahl: workaround to allow source ... to be added to the batch header
@@ -530,6 +531,7 @@ class EnvironmentInfos:
                 else:
                     environment.append("export {str(var)}")
         environment.append("")
+        # Write the unset commands
         if "unset_vars" in self.config:
             for var in self.config["unset_vars"]:
                 environment.append(f"unset {var}")
