@@ -71,7 +71,7 @@ class EnvironmentInfos:
             )
 
         # Add_s can only be inside choose_ blocks in the machine file
-        for entry in ["add_module_actions", "add_export_vars"]:
+        for entry in ["add_module_actions", "add_export_vars", "add_unset_vars"]:
             if entry in self.config:
                 del self.config[entry]
 
@@ -164,10 +164,10 @@ class EnvironmentInfos:
                 modelconfig["environment_changes"] = modelconfig[thesechanges]
 
         if "environment_changes" in modelconfig:
-            for entry in ["add_module_actions", "add_export_vars"]:
+            for entry in ["add_module_actions", "add_export_vars", "add_unset_vars"]:
                 # Initialize the environment variables
                 if not entry in self.config:
-                    if entry == "add_module_actions":
+                    if entry in ["add_module_actions", "add_unset_vars"]:
                         self.config[entry] = []
                     elif entry == "add_export_vars":
                         self.config[entry] = {}
@@ -193,7 +193,7 @@ class EnvironmentInfos:
             esm_parser.basic_choose_blocks(self.config, self.config)
 
             # Remove the environment variables from the config
-            for entry in ["add_module_actions", "add_export_vars"]:
+            for entry in ["add_module_actions", "add_export_vars", "add_unset_vars"]:
                 if entry in self.config:
                     del self.config[entry]
 
@@ -529,6 +529,10 @@ class EnvironmentInfos:
                 # defined now as dictionaries
                 else:
                     environment.append("export {str(var)}")
+        environment.append("")
+        if "unset_vars" in self.config:
+            for var in self.config["unset_vars"]:
+                environment.append(f"unset {var}")
 
         return environment
 
