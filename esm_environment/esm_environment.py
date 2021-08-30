@@ -368,7 +368,7 @@ class EnvironmentInfos:
 
         # Get necessary variables
         setup = complete_config.get("general", {}).get("model", None)
-        version = complete_config.get("general", {}).get("version", None)
+        version = str(complete_config.get("general", {}).get("version", None))
         models = complete_config.get("general", {}).get("models", None)
         # Check for errors TODO: logging
         if not models:
