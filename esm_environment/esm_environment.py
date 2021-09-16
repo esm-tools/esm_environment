@@ -182,12 +182,7 @@ class EnvironmentInfos:
             # Merge the ``environment_changes`` into the general ``config``
             self.config.update(modelconfig["environment_changes"])
             # Change any ``choose_computer.*`` block in ``config`` to ``choose_*``
-            all_keys = list(self.config.keys())
-            for key in all_keys:
-                if "choose_computer." in key:
-                    newkey = key.replace("computer.", "")
-                    self.config[newkey] = self.config[key]
-                    del self.config[key]
+            self.remove_computer_from_choose(self.config)
 
             # Resolve ``choose_`` blocks
             esm_parser.basic_choose_blocks(self.config, self.config)
@@ -568,6 +563,26 @@ class EnvironmentInfos:
             for command in self.commands:
                 script_file.write(f"{command}\n")
             script_file.write("\n")
+
+
+    def remove_computer_from_choose(self, chapter):
+        """
+        Recursively remove ``computer.`` from all the `choose_` keys.
+
+        Parameters
+        ----------
+        chapter : dict
+            Dictionary to search for ``choose_computer.`` blocks.
+        """
+        all_keys = list(chapter.keys())
+        for key in all_keys:
+            if isinstance(key, str) and "choose_computer." in key:
+                newkey = key.replace("computer.", "")
+                chapter[newkey] = chapter[key]
+                del chapter[key]
+                key = newkey
+            if isinstance(chapter[key], dict):
+                self.remove_computer_from_choose(chapter[key])
 
 
     @staticmethod
