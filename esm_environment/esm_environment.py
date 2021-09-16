@@ -565,24 +565,24 @@ class EnvironmentInfos:
             script_file.write("\n")
 
 
-    def remove_computer_from_choose(self, config):
+    def remove_computer_from_choose(self, chapter):
         """
         Recursively remove ``computer.`` from all the `choose_` keys.
 
         Parameters
         ----------
-        config : dict
-            Configuration to search for ``choose_computer.`` blocks.
+        chapter : dict
+            Dictionary to search for ``choose_computer.`` blocks.
         """
-        all_keys = list(config.keys())
+        all_keys = list(chapter.keys())
         for key in all_keys:
             if isinstance(key, str) and "choose_computer." in key:
                 newkey = key.replace("computer.", "")
-                config[newkey] = config[key]
-                del config[key]
+                chapter[newkey] = chapter[key]
+                del chapter[key]
                 key = newkey
-            if isinstance(config[key], dict):
-                self.remove_computer_from_choose(config[key])
+            if isinstance(chapter[key], dict):
+                self.remove_computer_from_choose(chapter[key])
 
 
     @staticmethod
